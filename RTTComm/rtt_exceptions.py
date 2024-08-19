@@ -1,0 +1,2 @@
+class RTTCommError(Exception):
+    pass
