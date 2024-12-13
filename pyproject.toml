@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rtt-lora-comms-package"
+name = "rtt-sik-comms-package"
 version = "0.1.0"
 description = ""
 authors = ["Tyler Flar <tflar@ucsd.edu>"]

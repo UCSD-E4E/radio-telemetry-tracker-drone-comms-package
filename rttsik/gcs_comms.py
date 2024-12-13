@@ -54,7 +54,8 @@ class GcsCommications:
         while self.__running:
             message = self.sik_radio.recieve()
             if message:
-                self.__process_message(message)
+                if(len(message) >= 20): # can't do a checksum if the packet doesn't contain a checksum
+                    self.__process_message(message)
 
     def __transmitter_loop(self):
         while self.__running:
@@ -69,8 +70,10 @@ class GcsCommications:
         type = Packet.get_type(message)
 
         # testing to make sure data recieved is correct
+        
+        print("Message:")
         print(message.hex())
-        if(type[0] == 2):
+        if(Packet.check_crc(message)):
             print("Printing data")
             hb_packet = Heartbeat_Packet.from_bytes(message)
             print(hb_packet.type)
@@ -84,7 +87,8 @@ class GcsCommications:
         # Decode header
         # Based off of header, accesses callables list from dictionary
         # Iterate through list
-        pass
+        else:
+            print("failed")
         
 
     def set_ping_config(self, run_number_id: int, target_frequencies_hz: list[int], sampling_rate_hz: Optional[int] = None, gain_db: Optional[float] = None, 

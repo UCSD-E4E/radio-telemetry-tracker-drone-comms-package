@@ -64,7 +64,8 @@ class FdsComms:
         while True:
             message = self.sik_radio.recieve()
             if message:
-                self.__process_message(message)
+                if(len(message) >= 20): # can't do a checksum if you don't have the checksum
+                    self.__process_message(message)
             
             time.sleep(0.1)
 
@@ -73,6 +74,8 @@ class FdsComms:
         if(Packet.check_crc(message)):
             if(packet_type[0] == 0x6):
                 self.__process_config(message)
+        else:
+            print("fail")
 
 
     def __process_config(self, packet: bytes):
@@ -89,7 +92,7 @@ class FdsComms:
             self.sik_radio.send(hb_packet.to_packet())     
             self.packet_ctr = self.packet_ctr + 1
             self.transmitter_lock.release()
-            time.sleep(5)
+            time.sleep(2)
 
     def __transmitter_loop(self):
         while self.__running:

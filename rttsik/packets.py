@@ -4,6 +4,7 @@ from typing import Optional
 from datetime import datetime
 
 # placeholder packet class
+# packet contains a type, id, payload size and timestamp in the header, plus a 4 byte checksum at the end
 class Packet:
     def __init__(self, id: int, packet_sent_timestamp: datetime):
         self.type = 0x0
@@ -172,10 +173,20 @@ class Trx_Loc_Estimation_Packet(Packet):
 
     def to_packet(self):
         header = super().get_header()
-        msg = header + struct.pack('<Ifff', self.transmitter_frequency_hz, self.transmitter_latitude_degrees, self.transmitter_longitude_degrees,
+        payload = struct.pack('<Ifff', self.transmitter_frequency_hz, self.transmitter_latitude_degrees, self.transmitter_longitude_degrees,
                 self.transmitter_altitude_meters)
-        crc = binascii.crc32(msg)
-        return msg + struct.pack('<I', crc)
+        crc = binascii.crc32(header + payload)
+        return header + payload + struct.pack('<I', crc)
+    
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Trx_Loc_Estimation_Packet(id, 0, 0.0, 0.0, 0.0, datetime.now())
+        rebuilt_packet.transmitter_frequency_hz, rebuilt_packet.transmitter_latitude_degrees, rebuilt_packet.transmitter_longitude_degrees, rebuilt_packet.transmitter_altitude_meters = struct.unpack('<Ifff', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
+    
     
 class Config_Ack_Packet(Packet):
     def __init__(self, id: int, success: bool, message, packet_sent_timestamp: datetime):
@@ -188,9 +199,18 @@ class Config_Ack_Packet(Packet):
 
     def to_packet(self):
         header = super().get_header()
-        msg = header + struct.pack('<?s', self.success, self.message)
-        crc = binascii.crc32(msg)
-        return msg + crc
+        payload = struct.pack('<?s', self.success, self.message)
+        crc = binascii.crc32(header + payload)
+        return header + payload + crc
+    
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Config_Ack_Packet(id, 0, 0, datetime.now())
+        rebuilt_packet.success, rebuilt_packet.message = struct.unpack('<?s', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
     
 class Command_Ack_Packet(Packet):
     def __init__(self, id: int, success: bool, message, packet_sent_timestamp: datetime):
@@ -203,9 +223,18 @@ class Command_Ack_Packet(Packet):
 
     def to_packet(self):
         header = super().get_header()
-        msg = header + struct.pack('<?s', self.success, self.message)
-        crc = binascii.crc32(msg)
-        return msg + crc
+        payload = header + struct.pack('<?s', self.success, self.message)
+        crc = binascii.crc32(header + payload)
+        return header + payload + crc
+    
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Command_Ack_Packet(id, 0, 0, datetime.now())
+        rebuilt_packet.success, rebuilt_packet.message = struct.unpack('<?s', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
         
 class Set_Ping_Finder_Config_Packet(Packet):
     def __init__(self, id: int, run_number_id: int, target_frequencies_hz: list[int], sampling_rate_hz: Optional[int] = None, gain_db: Optional[float] = None, 
@@ -290,6 +319,15 @@ class Config_Ack_Packet(Packet):
         msg = header + struct.pack('<?', self.success)
         crc = binascii.crc32(msg)
         return msg + crc
+    
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Config_Ack_Packet(id, 0, 0, datetime.now())
+        rebuilt_packet.success = struct.unpack('<?', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
 
 class Command_Ack_Packet(Packet):
     def __init__(self, id: int, success: bool, command_type: int, packet_sent_timestamp: datetime):
@@ -306,6 +344,15 @@ class Command_Ack_Packet(Packet):
         crc = binascii.crc32(msg)
         return msg + crc
     
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Command_Ack_Packet(id, 0, 0, datetime.now())
+        rebuilt_packet.success, rebuilt_packet.command_type = struct.unpack('<?I', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
+    
 class Command_Packet(Packet):
     def __init__(self, id: int, command_type: int):
         self.type = 0x9
@@ -319,3 +366,12 @@ class Command_Packet(Packet):
         msg = header + struct.pack('<I', self.command_type)
         crc = binascii.crc32(msg)
         return msg + crc
+    
+    @classmethod
+    def from_bytes(cls, packet: bytes) -> Packet:
+        id = super().get_id(packet)[0]
+        payload = super().get_payload(packet)
+        rebuilt_packet = Command_Ack_Packet(id, 0, 0, datetime.now())
+        rebuilt_packet.command_type = struct.unpack('<I', payload)
+        rebuilt_packet.packet_sent_timestamp = super().get_time(packet)
+        return rebuilt_packet
