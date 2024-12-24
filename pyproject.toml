@@ -1,15 +1,38 @@
 [tool.poetry]
-name = "rtt-sik-comms-package"
+name = "radio-telemetry-tracker-drone-comms-package"
 version = "0.1.0"
 description = ""
 authors = ["Tyler Flar <tflar@ucsd.edu>"]
-license = "MIT"
-readme = "README.md"
+license = "Other"
+packages = [
+    { include = "radio_telemetry_tracker_drone_comms_package" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
 pyserial = "^3.5"
+protobuf = "^5.29.2"
+grpcio-tools = "^1.68.1"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.3"
+pytest = "^8.3.3"
+pytest-mock = "^3.14.0"
+
+[tool.ruff]
+line-length = 120
+exclude = ["radio_telemetry_tracker_drone_comms_package/proto/packets_pb2.py"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--maxfail=5 --tb=short"
 
 [build-system]
 requires = ["poetry-core"]
