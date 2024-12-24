@@ -95,6 +95,9 @@ from radio_telemetry_tracker_drone_comms_package import DroneComms, RadioConfig,
     def on_gps_data(data: GPSData):
       print(f"GPS: {data.easting}, {data.northing}, {data.altitude}")
 
+    comms.register_gps_handler(on_gps_data)
+    ```
+
 3. **Start communication**:
     ```python
     comms.start()  # Opens the radio interface and starts Rx/Tx threads
