@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package radio_telemetry_tracker_drone_comms_package.proto;
+
+// Base fields common to all packets
+message BasePacket {
+  uint32 packet_id = 1;
+  bool need_ack = 2;
+  uint64 timestamp = 3; // Microseconds since epoch
+}
+
+// Define packets
+message AckPacket {
+  BasePacket base = 1;
+  uint32 ack_id = 2; // ID of the packet that this ack is for
+}
+
+message SyncRequestPacket {
+  BasePacket base = 1;
+}
+
+message SyncResponsePacket {
+  BasePacket base = 1;
+  bool success = 2;
+}
+
+message ConfigRequestPacket {
+  BasePacket base = 1;
+  float gain = 2;
+  int32 sampling_rate = 3;
+  int32 center_frequency = 4;
+  int32 run_num = 5;
+  bool enable_test_data = 6;
+  int32 ping_width_ms = 7;
+  int32 ping_min_snr = 8;
+  float ping_max_len_mult = 9;
+  float ping_min_len_mult = 10;
+  repeated int32 target_frequencies = 11;
+}
+
+message ConfigResponsePacket {
+  BasePacket base = 1;
+  bool success = 2;
+}
+
+message GPSPacket {
+  BasePacket base = 1;
+  float easting = 2;
+  float northing = 3;
+  float altitude = 4;
+  float heading = 5;
+  int32 epsg_code = 6;
+}
+
+message PingPacket {
+  BasePacket base = 1;
+  int32 frequency = 2;
+  float amplitude = 3;
+  float easting = 4;
+  float northing = 5;
+  float altitude = 6;
+  int32 epsg_code = 7;
+}
+
+message LocEstPacket {
+  BasePacket base = 1;
+  int32 frequency = 2;
+  float easting = 3;
+  float northing = 4;
+  int32 epsg_code = 5;
+}
+
+message StartRequestPacket {
+  BasePacket base = 1;
+}
+
+message StartResponsePacket {
+  BasePacket base = 1;
+  bool success = 2;
+}
+
+message StopRequestPacket {
+  BasePacket base = 1;
+}
+
+message StopResponsePacket {
+  BasePacket base = 1;
+  bool success = 2;
+}
+
+message ErrorPacket {
+  BasePacket base = 1;
+}
+
+// Wrapper message containing one of the packet types
+message RadioPacket {
+  oneof msg {
+    AckPacket ack_pkt = 1;
+    SyncRequestPacket syn_rqt = 2;
+    SyncResponsePacket syn_rsp = 3;
+    ConfigRequestPacket cfg_rqt = 4;
+    ConfigResponsePacket cfg_rsp = 5;
+    GPSPacket gps_pkt = 6;
+    PingPacket ping_pkt = 7;
+    LocEstPacket loc_pkt = 8;
+    StartRequestPacket str_rqt = 9;
+    StartResponsePacket str_rsp = 10;
+    StopRequestPacket stp_rqt = 11;
+    StopResponsePacket stp_rsp = 12;
+    ErrorPacket err_pkt = 13;
+  }
+}
+
+
