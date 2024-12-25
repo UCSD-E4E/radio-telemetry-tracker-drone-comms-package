@@ -29,7 +29,7 @@ class PacketManager:
         radio_interface: RadioInterface,
         ack_timeout: float = 2.0,
         max_retries: int = 5,
-        on_ack_timeout: Callable[[RadioPacket], None] | None = None,
+        on_ack_timeout: Callable[[int], None] | None = None,
     ) -> None:
         """Initialize the PacketManager.
 
@@ -37,7 +37,7 @@ class PacketManager:
             radio_interface: Interface for radio communication.
             ack_timeout: Time in seconds to wait for acknowledgment.
             max_retries: Maximum number of retransmission attempts.
-            on_ack_timeout: Optional callback when packet acknowledgment times out.
+            on_ack_timeout: Optional callback when packet acknowledgment times out, receives packet_id.
         """
         self.radio_interface = radio_interface
         self.ack_timeout = ack_timeout
@@ -121,10 +121,10 @@ class PacketManager:
                     to_remove.append(pid)
 
         for pid in to_remove:
-            timed_out_pkt = self.outstanding_acks[pid]["packet"]
+            self.outstanding_acks[pid]["packet"]
             del self.outstanding_acks[pid]
             if self.on_ack_timeout:
-                self.on_ack_timeout(timed_out_pkt)
+                self.on_ack_timeout(pid)
 
     def _recv_loop(self) -> None:
         """Continuously attempt to receive packets and handle them."""
