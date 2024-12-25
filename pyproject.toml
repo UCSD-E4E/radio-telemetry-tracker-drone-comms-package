@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "radio-telemetry-tracker-drone-comms-package"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Tyler Flar <tflar@ucsd.edu>"]
 license = "Other"
@@ -13,7 +13,6 @@ python = "^3.12"
 pyserial = "^3.5"
 protobuf = "^5.29.2"
 grpcio-tools = "^1.68.1"
-
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.3"
