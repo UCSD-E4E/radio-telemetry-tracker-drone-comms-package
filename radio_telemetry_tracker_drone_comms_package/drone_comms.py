@@ -68,7 +68,7 @@ class DroneComms(PacketManager):
         radio_config: RadioConfig = None,
         ack_timeout: float = 2.0,
         max_retries: int = 5,
-        on_ack_callback: Callable[[RadioPacket], None] | None = None,
+        on_ack_callback: Callable[[int], None] | None = None,
     ) -> None:
         """Initialize DroneComms instance.
 
@@ -76,7 +76,7 @@ class DroneComms(PacketManager):
             radio_config: Configuration for radio interface
             ack_timeout: Timeout in seconds for acknowledgment packets
             max_retries: Maximum number of packet retransmission attempts
-            on_ack_callback: Optional callback function when acknowledgment is received
+            on_ack_callback: Optional callback function when acknowledgment times out, receives packet_id
         """
         if radio_config is None:
             msg = "Radio config is required"

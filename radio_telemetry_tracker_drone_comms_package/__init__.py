@@ -3,7 +3,7 @@
 Package initialization for the Radio Telemetry Tracker Drone Comms Package.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from radio_telemetry_tracker_drone_comms_package.data_models import (
     ConfigRequestData,
