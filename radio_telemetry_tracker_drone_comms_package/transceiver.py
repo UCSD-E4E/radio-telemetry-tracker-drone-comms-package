@@ -30,6 +30,7 @@ class PacketManager:
         ack_timeout: float = 2.0,
         max_retries: int = 5,
         on_ack_timeout: Callable[[int], None] | None = None,
+        on_ack_success: Callable[[int], None] | None = None,
     ) -> None:
         """Initialize the PacketManager.
 
@@ -38,11 +39,13 @@ class PacketManager:
             ack_timeout: Time in seconds to wait for acknowledgment.
             max_retries: Maximum number of retransmission attempts.
             on_ack_timeout: Optional callback when packet acknowledgment times out, receives packet_id.
+            on_ack_success: Optional callback when packet acknowledgment is received, receives packet_id.
         """
         self.radio_interface = radio_interface
         self.ack_timeout = ack_timeout
         self.max_retries = max_retries
         self.on_ack_timeout = on_ack_timeout
+        self.on_ack_success = on_ack_success
 
         self.send_queue: queue.PriorityQueue[tuple[int, float, RadioPacket]] = queue.PriorityQueue()
         # Maps packet_id -> { "packet": RadioPacket, "send_time": float, "retries": int }
@@ -140,6 +143,8 @@ class PacketManager:
             ack_id = packet.ack_pkt.ack_id
             if ack_id in self.outstanding_acks:
                 del self.outstanding_acks[ack_id]
+                if self.on_ack_success:
+                    self.on_ack_success(ack_id)
             return
 
         base = self._get_base(packet)

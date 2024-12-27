@@ -69,6 +69,7 @@ class DroneComms(PacketManager):
         ack_timeout: float = 2.0,
         max_retries: int = 5,
         on_ack_callback: Callable[[int], None] | None = None,
+        on_ack_success: Callable[[int], None] | None = None,
     ) -> None:
         """Initialize DroneComms instance.
 
@@ -77,6 +78,7 @@ class DroneComms(PacketManager):
             ack_timeout: Timeout in seconds for acknowledgment packets
             max_retries: Maximum number of packet retransmission attempts
             on_ack_callback: Optional callback function when acknowledgment times out, receives packet_id
+            on_ack_success: Optional callback function when acknowledgment is received, receives packet_id
         """
         if radio_config is None:
             msg = "Radio config is required"
@@ -107,6 +109,7 @@ class DroneComms(PacketManager):
             ack_timeout=ack_timeout,
             max_retries=max_retries,
             on_ack_timeout=on_ack_callback,
+            on_ack_success=on_ack_success,
         )
 
         # Each entry: "proto_field_name": (extractor_function, handler_function)
