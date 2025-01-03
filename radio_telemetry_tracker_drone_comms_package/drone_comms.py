@@ -553,8 +553,11 @@ class DroneComms(PacketManager):
     # Public send methods
     # --------------------------------------------------------------------------
 
-    def send_sync_request(self, _: SyncRequestData) -> tuple[int, bool, int]:
+    def send_sync_request(self, data: SyncRequestData) -> tuple[int, bool, int]:
         """Send a sync request packet.
+
+        Args:
+            data: Sync request data to send
 
         Returns:
             tuple: (packet_id, need_ack, timestamp)
@@ -563,6 +566,8 @@ class DroneComms(PacketManager):
         packet.syn_rqt.base.packet_id = self.generate_packet_id()
         packet.syn_rqt.base.need_ack = True
         packet.syn_rqt.base.timestamp = _current_timestamp_us()
+        packet.syn_rqt.ack_timeout = data.ack_timeout
+        packet.syn_rqt.max_retries = data.max_retries
         self.enqueue_packet(packet)
         return (
             packet.syn_rqt.base.packet_id,
@@ -581,7 +586,7 @@ class DroneComms(PacketManager):
         """
         packet = RadioPacket()
         packet.syn_rsp.base.packet_id = self.generate_packet_id()
-        packet.syn_rsp.base.need_ack = False
+        packet.syn_rsp.base.need_ack = True
         packet.syn_rsp.base.timestamp = _current_timestamp_us()
         packet.syn_rsp.success = data.success
         self.enqueue_packet(packet)
@@ -632,7 +637,7 @@ class DroneComms(PacketManager):
         """
         packet = RadioPacket()
         packet.cfg_rsp.base.packet_id = self.generate_packet_id()
-        packet.cfg_rsp.base.need_ack = False
+        packet.cfg_rsp.base.need_ack = True
         packet.cfg_rsp.base.timestamp = _current_timestamp_us()
         packet.cfg_rsp.success = data.success
         self.enqueue_packet(packet)
@@ -745,7 +750,7 @@ class DroneComms(PacketManager):
         """
         packet = RadioPacket()
         packet.str_rsp.base.packet_id = self.generate_packet_id()
-        packet.str_rsp.base.need_ack = False
+        packet.str_rsp.base.need_ack = True
         packet.str_rsp.base.timestamp = _current_timestamp_us()
         packet.str_rsp.success = data.success
         self.enqueue_packet(packet)
@@ -783,7 +788,7 @@ class DroneComms(PacketManager):
         """
         packet = RadioPacket()
         packet.stp_rsp.base.packet_id = self.generate_packet_id()
-        packet.stp_rsp.base.need_ack = False
+        packet.stp_rsp.base.need_ack = True
         packet.stp_rsp.base.timestamp = _current_timestamp_us()
         packet.stp_rsp.success = data.success
         self.enqueue_packet(packet)
@@ -801,7 +806,7 @@ class DroneComms(PacketManager):
         """
         packet = RadioPacket()
         packet.err_pkt.base.packet_id = self.generate_packet_id()
-        packet.err_pkt.base.need_ack = False
+        packet.err_pkt.base.need_ack = True
         packet.err_pkt.base.timestamp = _current_timestamp_us()
         self.enqueue_packet(packet)
         return (
@@ -818,6 +823,8 @@ class DroneComms(PacketManager):
         return SyncRequestData(
             packet_id=packet.base.packet_id,
             timestamp=packet.base.timestamp,
+            ack_timeout=packet.ack_timeout,
+            max_retries=packet.max_retries,
         )
 
     def _extract_sync_response(self, packet: SyncResponsePacket) -> SyncResponseData:
@@ -923,6 +930,9 @@ class DroneComms(PacketManager):
     # --------------------------------------------------------------------------
 
     def _handle_sync_request(self, data: SyncRequestData) -> None:
+        # Update ack_timeout and max_retries with values from sync request
+        self.ack_timeout = data.ack_timeout
+        self.max_retries = data.max_retries
         self._invoke_handlers(self._sync_request_handlers, data)
 
     def _handle_sync_response(self, data: SyncResponseData) -> None:

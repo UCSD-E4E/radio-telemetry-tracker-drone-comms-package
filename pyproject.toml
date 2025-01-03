@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "radio-telemetry-tracker-drone-comms-package"
-version = "0.1.2"
+version = "0.2.0"
 description = ""
 authors = ["Tyler Flar <tflar@ucsd.edu>"]
 license = "Other"

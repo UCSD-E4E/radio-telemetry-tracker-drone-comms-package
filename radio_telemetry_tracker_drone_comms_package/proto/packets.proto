@@ -17,6 +17,8 @@ message AckPacket {
 
 message SyncRequestPacket {
   BasePacket base = 1;
+  float ack_timeout = 2;
+  int32 max_retries = 3;
 }
 
 message SyncResponsePacket {
