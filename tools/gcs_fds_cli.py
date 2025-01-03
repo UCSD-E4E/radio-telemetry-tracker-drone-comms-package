@@ -406,7 +406,7 @@ class GCSFDSCLI(cmd.Cmd):
                 logger.exception("Invalid argument format: %s")
                 return
 
-        pid, ack, ts = self.drone_comms.send_gps(data)
+        pid, ack, ts = self.drone_comms.send_gps_data(data)
         logger.info(
             "Sent GPS (packet_id=%s, need_ack=%s, timestamp=%s)",
             pid,
@@ -458,7 +458,7 @@ class GCSFDSCLI(cmd.Cmd):
                 logger.exception("Invalid argument format: %s")
                 return
 
-        pid, ack, ts = self.drone_comms.send_ping(data)
+        pid, ack, ts = self.drone_comms.send_ping_data(data)
         logger.info(
             "Sent Ping (packet_id=%s, need_ack=%s, timestamp=%s)",
             pid,
@@ -502,7 +502,7 @@ class GCSFDSCLI(cmd.Cmd):
                 logger.exception("Invalid argument format: %s")
                 return
 
-        pid, ack, ts = self.drone_comms.send_loc_est(data)
+        pid, ack, ts = self.drone_comms.send_loc_est_data(data)
         logger.info(
             "Sent LocEst (packet_id=%s, need_ack=%s, timestamp=%s)",
             pid,
