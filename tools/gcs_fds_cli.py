@@ -34,6 +34,14 @@ class GCSFDSCLI(cmd.Cmd):
     intro = "Welcome to the GCS/FDS CLI. Type help or ? to list commands.\n"
     prompt = "(gcs-fds) "
 
+    # Default values for sync request
+    DEFAULT_ACK_TIMEOUT = 2.0
+    DEFAULT_MAX_RETRIES = 5
+
+    # Argument indices for sync request
+    ACK_TIMEOUT_ARG_IDX = 1
+    MAX_RETRIES_ARG_IDX = 2
+
     def __init__(self, radio_config: RadioConfig) -> None:
         """Initialize the CLI with radio configuration.
 
@@ -98,7 +106,17 @@ class GCSFDSCLI(cmd.Cmd):
             logger.info("Already started.")
             return
 
-        self.drone_comms = DroneComms(radio_config=self.radio_config)
+        def on_ack_timeout(packet_id: int) -> None:
+            logger.warning("Packet %d acknowledgment timed out", packet_id)
+
+        def on_ack_success(packet_id: int) -> None:
+            logger.info("Packet %d successfully acknowledged", packet_id)
+
+        self.drone_comms = DroneComms(
+            radio_config=self.radio_config,
+            on_ack_callback=on_ack_timeout,
+            on_ack_success=on_ack_success,
+        )
         self.drone_comms.start()
         self.started = True
         logger.info("Started drone communications.")
@@ -158,10 +176,7 @@ class GCSFDSCLI(cmd.Cmd):
             logger.info("Unknown packet type: %s", pkt_type)
             return
 
-        if (
-            pkt_type not in self.registered_callbacks
-            or not self.registered_callbacks[pkt_type]
-        ):
+        if pkt_type not in self.registered_callbacks or not self.registered_callbacks[pkt_type]:
             logger.info("No callbacks registered for '%s'.", pkt_type)
             return
 
@@ -180,13 +195,31 @@ class GCSFDSCLI(cmd.Cmd):
         else:
             logger.info("Failed to unregister callbacks (unexpected error).")
 
-    def do_send_sync_request(self, arg: str) -> None:  # noqa: ARG002
+    def do_send_sync_request(self, arg: str) -> None:
         """Send a sync request packet.
 
         Args:
-            arg: Command argument (unused)
+            arg: Command argument in format: [ack_timeout] [max_retries]
         """
-        pid, ack, ts = self.drone_comms.send_sync_request(SyncRequestData())
+        # Default values
+        data = SyncRequestData(
+            ack_timeout=self.DEFAULT_ACK_TIMEOUT,
+            max_retries=self.DEFAULT_MAX_RETRIES,
+        )
+
+        # Parse arguments if provided
+        parts = arg.split()
+        if parts:
+            try:
+                if len(parts) >= self.ACK_TIMEOUT_ARG_IDX:
+                    data.ack_timeout = float(parts[0])
+                if len(parts) >= self.MAX_RETRIES_ARG_IDX:
+                    data.max_retries = int(parts[1])
+            except ValueError:
+                logger.exception("Invalid argument format")
+                return
+
+        pid, ack, ts = self.drone_comms.send_sync_request(data)
         logger.info(
             "Sent SyncRequest (packet_id=%s, need_ack=%s, timestamp=%s)",
             pid,
