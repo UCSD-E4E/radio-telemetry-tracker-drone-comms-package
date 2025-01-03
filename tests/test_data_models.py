@@ -25,13 +25,22 @@ TEST_SAMPLING_RATE = 48000
 TEST_TARGET_FREQUENCIES = [100, 200, 300]
 TEST_SYNC_PACKET_ID = 123
 TEST_SYNC_TIMESTAMP = 456789
+TEST_SYNC_ACK_TIMEOUT = 2.0
+TEST_SYNC_MAX_RETRIES = 5
 
 
 def test_sync_request_data() -> None:
-    """Test SyncRequestData initialization and attribute access."""
-    data = SyncRequestData(packet_id=TEST_SYNC_PACKET_ID, timestamp=TEST_SYNC_TIMESTAMP)
+    """Test SyncRequestData model."""
+    data = SyncRequestData(
+        packet_id=TEST_SYNC_PACKET_ID,
+        timestamp=TEST_SYNC_TIMESTAMP,
+        ack_timeout=TEST_SYNC_ACK_TIMEOUT,
+        max_retries=TEST_SYNC_MAX_RETRIES,
+    )
     assert data.packet_id == TEST_SYNC_PACKET_ID  # noqa: S101
     assert data.timestamp == TEST_SYNC_TIMESTAMP  # noqa: S101
+    assert data.ack_timeout == TEST_SYNC_ACK_TIMEOUT  # noqa: S101
+    assert data.max_retries == TEST_SYNC_MAX_RETRIES  # noqa: S101
 
 
 def test_config_request_data() -> None:

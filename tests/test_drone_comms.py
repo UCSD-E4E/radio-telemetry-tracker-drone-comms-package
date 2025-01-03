@@ -15,6 +15,7 @@ from radio_telemetry_tracker_drone_comms_package.drone_comms import (
     RadioConfig,
 )
 from radio_telemetry_tracker_drone_comms_package.proto.packets_pb2 import RadioPacket
+from tests.test_data_models import TEST_SYNC_ACK_TIMEOUT, TEST_SYNC_MAX_RETRIES
 
 
 class MockInterface(Protocol):
@@ -88,11 +89,13 @@ def test_drone_comms_init_invalid_interface() -> None:
 
 
 def test_drone_comms_send_sync_request(drone_comms: DroneComms) -> None:
-    """Test sending sync request returns valid packet ID and timestamp."""
-    pid, need_ack, timestamp = drone_comms.send_sync_request(SyncRequestData())
+    """Test sending sync request packet."""
+    pid, need_ack, timestamp = drone_comms.send_sync_request(
+        SyncRequestData(ack_timeout=TEST_SYNC_ACK_TIMEOUT, max_retries=TEST_SYNC_MAX_RETRIES),
+    )
+    assert pid > 0  # noqa: S101
     assert need_ack is True  # noqa: S101
-    assert pid != 0  # noqa: S101
-    assert timestamp != 0  # noqa: S101
+    assert timestamp > 0  # noqa: S101
 
 
 def test_drone_comms_send_config_request(drone_comms: DroneComms) -> None:

@@ -9,6 +9,8 @@ from dataclasses import dataclass
 class SyncRequestData:
     """Data container for synchronization request packets."""
 
+    ack_timeout: float
+    max_retries: int
     packet_id: int | None = None
     timestamp: int | None = None
 
